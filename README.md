@@ -8,10 +8,10 @@ https://github.com/llvm-mirror/llvm/blob/master/cmake/platforms/WinMsvc.cmake
 
 ```
 cmake -G Ninja
-   -DCMAKE_TOOLCHAIN_FILE=/path/to/this/file
+   -DCMAKE_TOOLCHAIN_FILE=/path/to/clang-cl-msvc.cmake
    -DHOST_ARCH=[aarch64|arm64|armv7|arm|i686|x86|x86_64|x64]
-   -DMSVC_BASE=/path/to/MSVC/system/libraries/and/includes
-   -DWINSDK_BASE=/path/to/windows-sdk
+   -DMSVC_BASE=/path/to/msvc
+   -DWINSDK_BASE=/path/to/winsdk
    -DWINSDK_VER=windows sdk version folder name
    -DLLVM_VER=6
    -DCLANG_VER=6.0
