@@ -13,7 +13,7 @@ cmake -G Ninja
    -DMSVC_BASE=/path/to/msvc
    -DWINSDK_BASE=/path/to/winsdk
    -DWINSDK_VER=windows sdk version folder name
-   -DLLVM_VER=6
+   -DLLVM_VER=6.0
    -DCLANG_VER=6.0
 ```
 
@@ -117,7 +117,6 @@ https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk
  BUILD_TYPES=debug release
  
  TARGETS=$(foreach h,$(HOSTS),$(addprefix $(h)-,$(BUILD_TYPES)))
- PKG_TARGETS=$(addprefix package-,$(TARGETS))
  
  .SECONDEXPANSION:
  $(TARGETS): build/$$@/build.ninja
