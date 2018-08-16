@@ -103,3 +103,48 @@ libraries when running on a case-sensitive filesystem.
 The window SDK can downloaded directly from Microsoft at:
 
 https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk
+
+## Examples
+
+### Using a makefile for building a project on debian9 for win32
+
+```
+ .PHONY: all clean clang-msvc-sdk
+ 
+ MSVC_SDK_URL={Git URL to a copy of this repository which includes the MSVC SDK}
+ 
+ HOSTS=win32-clang
+ BUILD_TYPES=debug release
+ 
+ TARGETS=$(foreach h,$(HOSTS),$(addprefix $(h)-,$(BUILD_TYPES)))
+ PKG_TARGETS=$(addprefix package-,$(TARGETS))
+ 
+ .SECONDEXPANSION:
+ $(TARGETS): build/$$@/build.ninja
+     @cmake --build build/$@ --parallel
+ 
+ .clang-msvc-sdk:
+     git clone $(MSVC_SDK_URL) .clang-msvc-sdk
+ 
+ clang-msvc-sdk: .clang-msvc-sdk
+     @cd .clang-msvc-sdk && git pull
+ 
+ build/win32-clang-%/build.ninja: Makefile .clang-msvc-sdk
+     @mkdir -p $(dir $@)
+     @cd $(dir $@) && cmake ../.. -G Ninja \
+         -DCMAKE_BUILD_TYPE=$(lastword $(subst -, ,$(notdir $(dir $@)))) \
+         -DCMAKE_TOOLCHAIN_FILE=$(abspath .clang-msvc-sdk)/clang-cl-msvc.cmake \
+         -DMSVC_BASE=$(abspath .clang-msvc-sdk)/msvc/14.14.26428 \
+         -DWINSDK_BASE=$(abspath .clang-msvc-sdk)/winsdk \
+         -DWINSDK_VER=10.0.17134.0 \
+         -DHOST_ARCH=x86
+```
+
+The above make file provides the following targets:
+
+```
+$ make
+all                          win32-clang-debug
+clang-msvc-sdk               win32-clang-release
+clean
+```
