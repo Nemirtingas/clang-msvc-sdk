@@ -61,23 +61,22 @@ set(CMAKE_SYSTEM_NAME Windows)
 set(CMAKE_SYSTEM_VERSION 10.0)
 set(CMAKE_SYSTEM_PROCESSOR AMD64)
 
-if(NOT EXISTS "${LLVM_VER}")
-  message(STATUS "LLVM_VER not set assuming version 6.0")
-  set(LLVM_VER 6.0)
-endif()
-
-if(NOT EXISTS "${CLANG_VER}")
-  message(STATUS "CLANG_VER not set assuming version 6.0")
-  set(CLANG_VER 6.0)
-endif()
-
 init_user_prop(HOST_ARCH)
-init_user_prop(LLVM_NATIVE_TOOLCHAIN)
 init_user_prop(MSVC_BASE)
 init_user_prop(WINSDK_BASE)
 init_user_prop(WINSDK_VER)
 init_user_prop(LLVM_VER)
 init_user_prop(CLANG_VER)
+
+if(LLVM_VER STREQUAL "")
+  message(STATUS "LLVM_VER not set assuming version 6.0")
+  set(LLVM_VER 6.0)
+endif()
+
+if(CLANG_VER STREQUAL "")
+  message(STATUS "CLANG_VER not set assuming version 6.0")
+  set(CLANG_VER 6.0)
+endif()
 
 if(NOT HOST_ARCH)
   set(HOST_ARCH x86_64)
