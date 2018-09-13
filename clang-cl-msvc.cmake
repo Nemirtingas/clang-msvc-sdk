@@ -69,13 +69,13 @@ init_user_prop(LLVM_VER)
 init_user_prop(CLANG_VER)
 
 if(LLVM_VER STREQUAL "")
-  message(STATUS "LLVM_VER not set assuming version 6.0")
-  set(LLVM_VER 6.0)
+  message(STATUS "LLVM_VER not set assuming version 7"
+  set(LLVM_VER 7)
 endif()
 
 if(CLANG_VER STREQUAL "")
-  message(STATUS "CLANG_VER not set assuming version 6.0")
-  set(CLANG_VER 6.0)
+  message(STATUS "CLANG_VER not set assuming version 7")
+  set(CLANG_VER 7)
 endif()
 
 if(NOT HOST_ARCH)
