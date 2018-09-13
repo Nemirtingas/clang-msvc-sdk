@@ -9,12 +9,12 @@ https://github.com/llvm-mirror/llvm/blob/master/cmake/platforms/WinMsvc.cmake
 ```
 cmake -G Ninja
    -DCMAKE_TOOLCHAIN_FILE=/path/to/clang-cl-msvc.cmake
-   -DHOST_ARCH=[aarch64|arm64|armv7|arm|i686|x86|x86_64|x64]
+   -DHOST_ARCH=[arm64|armv7|arm|i686|x86|x86_64|x64]
    -DMSVC_BASE=/path/to/msvc
    -DWINSDK_BASE=/path/to/winsdk
    -DWINSDK_VER=windows sdk version folder name
-   -DLLVM_VER=6.0
-   -DCLANG_VER=6.0
+   -DLLVM_VER=7
+   -DCLANG_VER=7
 ```
 
 ##### HOST_ARCH:
@@ -90,19 +90,35 @@ up a VFS overlay for the SDK headers and case-correcting symlinks for the
 libraries when running on a case-sensitive filesystem.
 
 ##### LLVM_VER (optional):
-  Version of the LLVM/LLD installation on the machine, it assumes 6.0 in case it is
+  Version of the LLVM/LLD installation on the machine, it assumes version 7 in case it is
   not set.
 
 ##### CLANG_VER (optional):
-  Version of the clang(-cl) installation on the machine, it assumes 6.0 in case it is
+  Version of the clang(-cl) installation on the machine, it assumes version 7 in case it is
   not set.
 
+## Obtaining the llvm/clang toolchain
 
-## Windows SDK
+The LLVM/Clang toolchain apt repositories can be found at:
 
-The window SDK can downloaded directly from Microsoft at:
+http://apt.llvm.org/
+
+The following packages are required to be present on your system:
+
+- llvm-7
+- clang-7
+- clang-tools-7
+
+## Obtaining the Windows SDK and MSVC files
+
+The Windows SDK can downloaded directly from Microsoft at:
 
 https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk
+
+The MSVC Base files can be obtained from any recent installation of Visual Studio assuming the VC++ components have been installed.
+The files can generally be found at the following location on your machine:
+
+C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC
 
 ## Examples
 
