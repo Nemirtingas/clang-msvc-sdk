@@ -69,7 +69,7 @@ init_user_prop(LLVM_VER)
 init_user_prop(CLANG_VER)
 
 if(LLVM_VER STREQUAL "")
-  message(STATUS "LLVM_VER not set assuming version 7"
+  message(STATUS "LLVM_VER not set assuming version 7")
   set(LLVM_VER 7)
 endif()
 
@@ -138,9 +138,15 @@ if(${LLD_LINK_PATH} STREQUAL "LLD_LINK_PATH-NOTFOUND")
 endif()
 
 # Attempt to find the native clang binary
-find_program(CLANG_PATH NAMES clang-${CLANG_VER})
-if(${CLANG_PATH} STREQUAL "CLANG_PATH-NOTFOUND")
+find_program(CLANG_C_PATH NAMES clang-${CLANG_VER})
+if(${CLANG_C_PATH} STREQUAL "CLANG_C_PATH-NOTFOUND")
   message(SEND_ERROR "Unable to find clang-${CLANG_VER}")
+endif()
+
+# Attempt to find the native clang++ binary
+find_program(CLANG_CXX_PATH NAMES clang++-${CLANG_VER})
+if(${CLANG_CXX_PATH} STREQUAL "CLANG_CXX_PATH-NOTFOUND")
+  message(SEND_ERROR "Unable to find clang++-${CLANG_VER}")
 endif()
 
 set(CMAKE_C_COMPILER "${CLANG_CL_PATH}" CACHE FILEPATH "")
@@ -152,9 +158,9 @@ set(CMAKE_LINKER "${LLD_LINK_PATH}" CACHE FILEPATH "")
 # a CROSS_TOOLCHAIN_FLAGS_NATIVE argument which consists of a list of flags to pass to CMake
 # when configuring the NATIVE portion of the cross-build.  By default we construct this so
 # that it points to the tools in the same location as the native clang-cl that we're using.
-list(APPEND _CTF_NATIVE_DEFAULT "-DCMAKE_ASM_COMPILER=${CLANG_PATH}")
-list(APPEND _CTF_NATIVE_DEFAULT "-DCMAKE_C_COMPILER=${CLANG_PATH}")
-list(APPEND _CTF_NATIVE_DEFAULT "-DCMAKE_CXX_COMPILER=${CLANG_PATH}")
+list(APPEND _CTF_NATIVE_DEFAULT "-DCMAKE_ASM_COMPILER=${CLANG_C_PATH}")
+list(APPEND _CTF_NATIVE_DEFAULT "-DCMAKE_C_COMPILER=${CLANG_C_PATH}")
+list(APPEND _CTF_NATIVE_DEFAULT "-DCMAKE_CXX_COMPILER=${CLANG_CXX_PATH}")
 
 set(CROSS_TOOLCHAIN_FLAGS_NATIVE "${_CTF_NATIVE_DEFAULT}" CACHE STRING "")
 
