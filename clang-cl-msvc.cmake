@@ -14,6 +14,18 @@ function(init_user_prop prop)
   endif()
 endfunction()
 
+macro(cmake_getconf VAR)
+  if(NOT ${VAR})
+    set(${VAR} "$ENV{${VAR}}")
+    if(${VAR})
+      set(${VAR} "${${VAR}}" CACHE STRING "${VAR}")
+      message(STATUS "Found ${VAR}: ${${VAR}}")
+    else()
+      message(FATAL_ERROR "Cannot determine \"${VAR}\"")
+    endif()
+  endif()
+endmacro()
+
 function(generate_winsdk_vfs_overlay winsdk_include_dir output_path)
   set(include_dirs)
   file(GLOB_RECURSE entries LIST_DIRECTORIES true "${winsdk_include_dir}/*")
@@ -61,12 +73,12 @@ set(CMAKE_SYSTEM_NAME Windows)
 set(CMAKE_SYSTEM_VERSION 10.0)
 set(CMAKE_SYSTEM_PROCESSOR AMD64)
 
-init_user_prop(HOST_ARCH)
-init_user_prop(MSVC_BASE)
-init_user_prop(WINSDK_BASE)
-init_user_prop(WINSDK_VER)
-init_user_prop(LLVM_VER)
-init_user_prop(CLANG_VER)
+cmake_getconf(HOST_ARCH)
+cmake_getconf(MSVC_BASE)
+cmake_getconf(WINSDK_BASE)
+cmake_getconf(WINSDK_VER)
+cmake_getconf(LLVM_VER)
+cmake_getconf(CLANG_VER)
 
 if(LLVM_VER STREQUAL "")
   message(STATUS "LLVM_VER not set assuming version 7")
@@ -137,6 +149,13 @@ if(${LLD_LINK_PATH} STREQUAL "LLD_LINK_PATH-NOTFOUND")
   message(SEND_ERROR "Unable to find lld-link-${LLVM_VER}")
 endif()
 
+# Attempt to find the llvm-rc binary
+find_program(LLVM_RC_PATH NAMES llvm-rc-${LLVM_VER})
+if(${LLVM_RC_PATH} STREQUAL "LLVM_RC_PATH-NOTFOUND")
+  message(SEND_ERROR "Unable to find llvm-rc-${LLVM_VER}")
+endif()
+
+# Attempt to find the llvm-link binary
 # Attempt to find the native clang binary
 find_program(CLANG_C_PATH NAMES clang-${CLANG_VER})
 if(${CLANG_C_PATH} STREQUAL "CLANG_C_PATH-NOTFOUND")
@@ -152,6 +171,7 @@ endif()
 set(CMAKE_C_COMPILER "${CLANG_CL_PATH}" CACHE FILEPATH "")
 set(CMAKE_CXX_COMPILER "${CLANG_CL_PATH}" CACHE FILEPATH "")
 set(CMAKE_LINKER "${LLD_LINK_PATH}" CACHE FILEPATH "")
+set(CMAKE_RC_COMPILER "${LLVM_RC_PATH}" CACHE FILEPATH "")
 
 # Even though we're cross-compiling, we need some native tools (e.g. llvm-tblgen), and those
 # native tools have to be built before we can start doing the cross-build.  LLVM supports
@@ -165,6 +185,7 @@ list(APPEND _CTF_NATIVE_DEFAULT "-DCMAKE_CXX_COMPILER=${CLANG_CXX_PATH}")
 set(CROSS_TOOLCHAIN_FLAGS_NATIVE "${_CTF_NATIVE_DEFAULT}" CACHE STRING "")
 
 set(COMPILE_FLAGS
+    -Xclang -fexceptions -Xclang -fcxx-exceptions -Xclang
     -D_CRT_SECURE_NO_WARNINGS
     --target=${TRIPLE_ARCH}-windows-msvc
     -fms-compatibility-version=19.11
