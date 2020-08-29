@@ -149,13 +149,6 @@ if(${LLD_LINK_PATH} STREQUAL "LLD_LINK_PATH-NOTFOUND")
   message(SEND_ERROR "Unable to find lld-link-${LLVM_VER}")
 endif()
 
-# Attempt to find the llvm-rc binary
-find_program(LLVM_RC_PATH NAMES llvm-rc-${LLVM_VER})
-if(${LLVM_RC_PATH} STREQUAL "LLVM_RC_PATH-NOTFOUND")
-  message(SEND_ERROR "Unable to find llvm-rc-${LLVM_VER}")
-endif()
-
-# Attempt to find the llvm-link binary
 # Attempt to find the native clang binary
 find_program(CLANG_C_PATH NAMES clang-${CLANG_VER})
 if(${CLANG_C_PATH} STREQUAL "CLANG_C_PATH-NOTFOUND")
@@ -168,10 +161,18 @@ if(${CLANG_CXX_PATH} STREQUAL "CLANG_CXX_PATH-NOTFOUND")
   message(SEND_ERROR "Unable to find clang++-${CLANG_VER}")
 endif()
 
+# Attempt to find the llvm-rc binary
+#find_program(LLVM_RC_PATH NAMES llvm-rc-${LLVM_VER})
+#if(${LLVM_RC_PATH} STREQUAL "LLVM_RC_PATH-NOTFOUND")
+#  message(SEND_ERROR "Unable to find llvm-rc-${LLVM_VER}")
+#endif()
+
+
 set(CMAKE_C_COMPILER "${CLANG_CL_PATH}" CACHE FILEPATH "")
 set(CMAKE_CXX_COMPILER "${CLANG_CL_PATH}" CACHE FILEPATH "")
 set(CMAKE_LINKER "${LLD_LINK_PATH}" CACHE FILEPATH "")
-set(CMAKE_RC_COMPILER "${LLVM_RC_PATH}" CACHE FILEPATH "")
+set(CMAKE_RC_COMPILER "${CMAKE_CURRENT_LIST_DIR}/rc" CACHE FILEPATH "")
+set(CMAKE_MT "${CMAKE_CURRENT_LIST_DIR}/mt" CACHE FILEPATH "")
 
 # Even though we're cross-compiling, we need some native tools (e.g. llvm-tblgen), and those
 # native tools have to be built before we can start doing the cross-build.  LLVM supports
@@ -224,7 +225,7 @@ set(CMAKE_CXX_FLAGS "${_CMAKE_CXX_FLAGS_INITIAL} ${COMPILE_FLAGS}" CACHE STRING 
 
 set(LINK_FLAGS
     # Prevent CMake from attempting to invoke mt.exe. It only recognizes the slashed form and not the dashed form.
-    /manifest:no
+    #/manifest:no
 
     -libpath:"${MSVC_LIB}/${WINSDK_ARCH}"
     -libpath:"${WINSDK_LIB}/ucrt/${WINSDK_ARCH}"
