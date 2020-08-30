@@ -27,7 +27,7 @@ while [ $# -gt 1 ]; do
 done
 
 input="$1"
-[ -z "$output" ] && output="${input%.rc}.res"
+[ -z "$output" ] && output="${input}.res"
 
 #/l0x409 -DGOOGLE_PROTOBUF_CMAKE_BUILD -D_CRT_SECURE_NO_WARNINGS /foCMakeFiles/libprotobuf-lite.dir/version.rc.res /home/nemir/goldberg_emulator_cmake/protobuf/win32/protobuf-src/cmake/version.rc
 
@@ -37,3 +37,4 @@ echo "Language   : $language"
 echo "Defines    : $defines"
 
 x86_64-w64-mingw32-windres -l "$language" $defines -i "$input" -o "$output"
+x86_64-w64-mingw32-windres -l "$language" $defines -i "$input" -o "${output%.rc.res}.res"
