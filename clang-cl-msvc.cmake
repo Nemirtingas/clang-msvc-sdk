@@ -149,6 +149,12 @@ if(${LLD_LINK_PATH} STREQUAL "LLD_LINK_PATH-NOTFOUND")
   message(SEND_ERROR "Unable to find lld-link-${LLVM_VER}")
 endif()
 
+# Attempt to find the lld-lib binary
+find_program(LLVM_LIB_PATH NAMES llvm-lib-${LLVM_VER})
+if(${LLVM_LIB_PATH} STREQUAL "LLVM_LIB_PATH-NOTFOUND")
+  message(SEND_ERROR "Unable to find llvm-lib-${LLVM_VER}")
+endif()
+
 # Attempt to find the llvm-nm binary
 find_program(LLVM_NM_PATH NAMES llvm-nm-${LLVM_VER})
 if(${LLVM_NM_PATH} STREQUAL "LLVM_NM_PATH-NOTFOUND")
@@ -177,6 +183,7 @@ endif()
 set(CMAKE_C_COMPILER "${CLANG_CL_PATH}" CACHE FILEPATH "")
 set(CMAKE_CXX_COMPILER "${CLANG_CL_PATH}" CACHE FILEPATH "")
 set(CMAKE_LINKER "${LLD_LINK_PATH}" CACHE FILEPATH "")
+set(CMAKE_AR "${LLVM_LIB_PATH}" CACHE FILEPATH "")
 set(CMAKE_NM "${LLVM_NM_PATH}" CACHE FILEPATH "")
 set(CMAKE_RC_COMPILER "${CMAKE_CURRENT_LIST_DIR}/rc" CACHE FILEPATH "")
 set(CMAKE_MT "${CMAKE_CURRENT_LIST_DIR}/mt" CACHE FILEPATH "")
