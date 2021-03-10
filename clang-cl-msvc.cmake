@@ -174,14 +174,15 @@ if(${CLANG_CXX_PATH} STREQUAL "CLANG_CXX_PATH-NOTFOUND")
 endif()
 
 # Attempt to find the llvm-rc binary
-#find_program(LLVM_RC_PATH NAMES llvm-rc-${LLVM_VER})
-#if(${LLVM_RC_PATH} STREQUAL "LLVM_RC_PATH-NOTFOUND")
-#  message(SEND_ERROR "Unable to find llvm-rc-${LLVM_VER}")
-#endif()
+find_program(LLVM_RC_PATH NAMES llvm-rc-${LLVM_VER})
+if(${LLVM_RC_PATH} STREQUAL "LLVM_RC_PATH-NOTFOUND")
+  message(SEND_ERROR "Unable to find rc")
+endif()
 
 
 set(CMAKE_C_COMPILER "${CLANG_CL_PATH}" CACHE FILEPATH "")
 set(CMAKE_CXX_COMPILER "${CLANG_CL_PATH}" CACHE FILEPATH "")
+set(CMAKE_RC_COMPILER "${LLVM_RC_PATH}" CACHE FILEPATH "")
 set(CMAKE_LINKER "${LLD_LINK_PATH}" CACHE FILEPATH "")
 set(CMAKE_AR "${LLVM_LIB_PATH}" CACHE FILEPATH "")
 set(CMAKE_NM "${LLVM_NM_PATH}" CACHE FILEPATH "")
@@ -219,8 +220,10 @@ if(case_sensitive_filesystem)
     generate_winsdk_vfs_overlay("${WINSDK_BASE}/Include/${WINSDK_VER}" "${winsdk_vfs_overlay_path}")
     init_user_prop(winsdk_vfs_overlay_path)
   endif()
-  list(APPEND COMPILE_FLAGS
-       -Xclang -ivfsoverlay -Xclang "${winsdk_vfs_overlay_path}")
+  #list(APPEND COMPILE_FLAGS
+  #     -Xclang -ivfsoverlay -Xclang "${winsdk_vfs_overlay_path}")
+
+  set(CMAKE_CLANG_VFS_OVERLAY "${winsdk_vfs_overlay_path}")
 endif()
 
 string(REPLACE ";" " " COMPILE_FLAGS "${COMPILE_FLAGS}")
@@ -231,6 +234,13 @@ string(REPLACE ";" " " COMPILE_FLAGS "${COMPILE_FLAGS}")
 # The assignments to the _INITIAL cache variables don't use FORCE, so they'll
 # only be populated on the initial configure, and their values won't change
 # afterward.
+set(_CMAKE_RC_FLAGS_INITIAL -I "${WINSDK_INCLUDE}/ucrt"
+                            -I "${WINSDK_INCLUDE}/shared"
+                            -I "${WINSDK_INCLUDE}/um"
+                            -I "${WINSDK_INCLUDE}/winrt")
+string(REPLACE ";" " " _CMAKE_RC_FLAGS_INITIAL "${_CMAKE_RC_FLAGS_INITIAL}")
+set(CMAKE_RC_FLAGS "${_CMAKE_RC_FLAGS_INITIAL}" CACHE STRING "" FORCE)
+
 set(_CMAKE_C_FLAGS_INITIAL "${CMAKE_C_FLAGS}" CACHE STRING "")
 set(CMAKE_C_FLAGS "${_CMAKE_C_FLAGS_INITIAL} ${COMPILE_FLAGS}" CACHE STRING "" FORCE)
 
