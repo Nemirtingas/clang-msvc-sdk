@@ -182,11 +182,12 @@ endif()
 
 set(CMAKE_C_COMPILER "${CLANG_CL_PATH}" CACHE FILEPATH "")
 set(CMAKE_CXX_COMPILER "${CLANG_CL_PATH}" CACHE FILEPATH "")
-set(CMAKE_RC_COMPILER "${LLVM_RC_PATH}" CACHE FILEPATH "")
+#set(CMAKE_RC_COMPILER "${LLVM_RC_PATH}" CACHE FILEPATH "")
+# Workaround until llvm-rc parses the .rc files like Microsoft's rc.exe
+set(CMAKE_RC_COMPILER "${CMAKE_CURRENT_LIST_DIR}/llvm-rc-wrapper" CACHE FILEPATH "")
 set(CMAKE_LINKER "${LLD_LINK_PATH}" CACHE FILEPATH "")
 set(CMAKE_AR "${LLVM_LIB_PATH}" CACHE FILEPATH "")
 set(CMAKE_NM "${LLVM_NM_PATH}" CACHE FILEPATH "")
-set(CMAKE_RC_COMPILER "${CMAKE_CURRENT_LIST_DIR}/rc" CACHE FILEPATH "")
 set(CMAKE_MT "${CMAKE_CURRENT_LIST_DIR}/mt" CACHE FILEPATH "")
 
 # Even though we're cross-compiling, we need some native tools (e.g. llvm-tblgen), and those

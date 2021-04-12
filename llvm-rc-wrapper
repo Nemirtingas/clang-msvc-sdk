@@ -1,0 +1,37 @@
+#! /bin/bash
+
+shopt -s nocasematch
+
+llvm_rc_args=()
+while [ $# -gt 1 ]; do
+  param=$1
+  shift
+  case "$param" in
+    -d*|/d*)
+      if [ "${#param}" -eq 2 ]; then
+        llvm_rc_args+=("/D" "$1")
+        shift
+      else
+        llvm_rc_args+=("/D" "${param:2}")
+      fi
+      ;;
+    -l*|/l*)
+      if [ "${#param}" -eq 2 ]; then
+        llvm_rc_args+=("/l" "$1")
+        shift
+      else
+        llvm_rc_args+=("/l" "${param:2}")
+      fi
+      ;;
+    *) llvm_rc_args+=("$param");;
+  esac
+done
+
+rc_file=$1
+# Fix: llvm-rc: Error in VERSIONINFO statement (ID 1): 
+#      Non-ASCII 8-bit codepoint (169) can't occur in a non-Unicode string
+sed -i "s/\xa9/(C)/g;s/\\\\xa9/(C)/g" "$rc_file"
+
+llvm_rc_args+=("$rc_file")
+echo llvm-rc-${LLVM_VER} "${llvm_rc_args[@]}"
+llvm-rc-${LLVM_VER} "${llvm_rc_args[@]}"
