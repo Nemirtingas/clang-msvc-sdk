@@ -221,8 +221,8 @@ if(case_sensitive_filesystem)
     generate_winsdk_vfs_overlay("${WINSDK_BASE}/Include/${WINSDK_VER}" "${winsdk_vfs_overlay_path}")
     init_user_prop(winsdk_vfs_overlay_path)
   endif()
-  #list(APPEND COMPILE_FLAGS
-  #     -Xclang -ivfsoverlay -Xclang "${winsdk_vfs_overlay_path}")
+  list(APPEND COMPILE_FLAGS
+       -Xclang -ivfsoverlay -Xclang "${winsdk_vfs_overlay_path}")
 
   set(CMAKE_CLANG_VFS_OVERLAY "${winsdk_vfs_overlay_path}")
 endif()
