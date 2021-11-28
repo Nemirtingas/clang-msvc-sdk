@@ -235,7 +235,8 @@ string(REPLACE ";" " " COMPILE_FLAGS "${COMPILE_FLAGS}")
 # The assignments to the _INITIAL cache variables don't use FORCE, so they'll
 # only be populated on the initial configure, and their values won't change
 # afterward.
-set(_CMAKE_RC_FLAGS_INITIAL -I "${WINSDK_INCLUDE}/ucrt"
+set(_CMAKE_RC_FLAGS_INITIAL -I "${MSVC_INCLUDE}"
+                            -I "${WINSDK_INCLUDE}/ucrt"
                             -I "${WINSDK_INCLUDE}/shared"
                             -I "${WINSDK_INCLUDE}/um"
                             -I "${WINSDK_INCLUDE}/winrt")
