@@ -12,6 +12,18 @@
 #  </trustInfo>
 #</assembly>"
 
+function which
+{
+  arg=$1
+  IFS=':' read -ra paths <<< "$PATH"
+  for p in "${paths[@]}"; do
+    if [ -x "$p/$arg" ]; then
+      echo "$p/$arg"
+      break
+    fi
+  done
+}
+
 echo "${0}: ${@}"
 
 LLVM_MT="$(which "llvm-mt-${LLVM_VER}")"
@@ -32,8 +44,7 @@ if [ "$res" -ne 0 ]; then
     echo "llvm-mt not compiled with libxml2, skipping manifest."
     exit 0
   fi
-  exit "$res"
 fi
 
-exit 0
-
+echo "$output"
+exit "$res"
