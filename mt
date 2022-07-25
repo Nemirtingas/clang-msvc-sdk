@@ -12,23 +12,21 @@
 #  </trustInfo>
 #</assembly>"
 
-function which
+function is_bin_in_path
 {
-  arg=$1
-  IFS=':' read -ra paths <<< "$PATH"
-  for p in "${paths[@]}"; do
-    if [ -x "$p/$arg" ]; then
-      echo "$p/$arg"
-      break
-    fi
-  done
+  if [[ -n $ZSH_VERSION ]]; then
+    builtin whence -p "$1" &> /dev/null
+  else  # bash:
+    builtin type -P "$1" &> /dev/null
+  fi
 }
 
 echo "${0}: ${@}"
 
-LLVM_MT="$(which "llvm-mt-${LLVM_VER}")"
-if [ -z "$LLVM_MT" ]; then
-  LLVM_MT="$(which "llvm-mt")"
+if [ ! -z "${LLVM_VER}" ] && is_bin_in_path "llvm-mt-${LLVM_VER}"; then
+  LLVM_MT="llvm-mt-${LLVM_VER}"
+elif is_bin_in_path "llvm-mt"; then
+  LLVM_MT="llvm-mt"
 fi
 
 if [ -z "$LLVM_MT" ]; then
