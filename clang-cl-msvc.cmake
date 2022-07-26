@@ -163,7 +163,7 @@ endif()
 
 # Attempt to find the llvm-mt binary
 #find_program(LLVM_MT_PATH NAMES llvm-mt-${LLVM_VER})
-set(LLVM_MT_PATH "${CMAKE_CURRENT_LIST_DIR}/mt")
+set(LLVM_MT_PATH "${CMAKE_CURRENT_LIST_DIR}/llvm-mt-wrapper")
 if(${LLVM_MT_PATH} STREQUAL "LLVM_MT_PATH-NOTFOUND")
   message(SEND_ERROR "Unable to find llvm-mt-${LLVM_VER}")
 endif()
