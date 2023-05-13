@@ -96,21 +96,29 @@ endif()
 if(HOST_ARCH STREQUAL "aarch64" OR HOST_ARCH STREQUAL "arm64")
   set(TRIPLE_ARCH "aarch64")
   set(WINSDK_ARCH "arm64")
+  set(DIASDK_ARCH "arm64")
 elseif(HOST_ARCH STREQUAL "armv7" OR HOST_ARCH STREQUAL "arm")
   set(TRIPLE_ARCH "armv7")
   set(WINSDK_ARCH "arm")
+  set(DIASDK_ARCH "arm")
 elseif(HOST_ARCH STREQUAL "i686" OR HOST_ARCH STREQUAL "x86")
   set(TRIPLE_ARCH "i686")
   set(WINSDK_ARCH "x86")
+  set(DIASDK_ARCH "")
 elseif(HOST_ARCH STREQUAL "x86_64" OR HOST_ARCH STREQUAL "x64")
   set(TRIPLE_ARCH "x86_64")
   set(WINSDK_ARCH "x64")
+  set(DIASDK_ARCH "amd64")
 else()
   message(SEND_ERROR "Unknown host architecture ${HOST_ARCH}. Must be aarch64 (or arm64), armv7 (or arm), i686 (or x86), or x86_64 (or x64).")
 endif()
 
 set(MSVC_INCLUDE "${MSVC_BASE}/include")
 set(MSVC_LIB "${MSVC_BASE}/lib")
+set(ATLMFC_INCLUDE "${MSVC_BASE}/atlmfc/include")
+set(ATLMFC_LIB "${MSVC_BASE}/atlmfc/lib")
+set(DIASDK_INCLUDE "${MSVC_BASE}/diasdk/include")
+set(DIASDK_LIB "${MSVC_BASE}/lib")
 set(WINSDK_INCLUDE "${WINSDK_BASE}/Include/${WINSDK_VER}")
 set(WINSDK_LIB "${WINSDK_BASE}/Lib/${WINSDK_VER}")
 
@@ -220,6 +228,14 @@ set(COMPILE_FLAGS
     -imsvc "${WINSDK_INCLUDE}/um"
     -imsvc "${WINSDK_INCLUDE}/winrt")
 
+if (EXISTS "${ATLMFC_INCLUDE}")
+  list(APPEND COMPILE_FLAGS -imsvc "${ATLMFC_INCLUDE}")
+endif()
+
+if (EXISTS "${DIASDK_INCLUDE}")
+  list(APPEND COMPILE_FLAGS -imsvc "${DIASDK_INCLUDE}")
+endif()
+
 if(case_sensitive_filesystem)
   # Ensure all sub-configures use the top-level VFS overlay instead of generating their own.
   init_user_prop(winsdk_vfs_overlay_path)
@@ -247,6 +263,15 @@ set(_CMAKE_RC_FLAGS_INITIAL -I "${MSVC_INCLUDE}"
                             -I "${WINSDK_INCLUDE}/shared"
                             -I "${WINSDK_INCLUDE}/um"
                             -I "${WINSDK_INCLUDE}/winrt")
+
+if (EXISTS "${ATLMFC_INCLUDE}")
+  list(APPEND _CMAKE_RC_FLAGS_INITIAL -I "${ATLMFC_INCLUDE}")
+endif()
+
+if (EXISTS "${DIASDK_INCLUDE}")
+  list(APPEND _CMAKE_RC_FLAGS_INITIAL -I "${DIASDK_INCLUDE}")
+endif()
+
 string(REPLACE ";" " " _CMAKE_RC_FLAGS_INITIAL "${_CMAKE_RC_FLAGS_INITIAL}")
 set(CMAKE_RC_FLAGS "${_CMAKE_RC_FLAGS_INITIAL}" CACHE STRING "" FORCE)
 
@@ -263,6 +288,14 @@ set(LINK_FLAGS
     -libpath:"${MSVC_LIB}/${WINSDK_ARCH}"
     -libpath:"${WINSDK_LIB}/ucrt/${WINSDK_ARCH}"
     -libpath:"${WINSDK_LIB}/um/${WINSDK_ARCH}")
+
+if (EXISTS "${ATLMFC_LIB}")
+  list(APPEND LINK_FLAGS -libpath:"${ATLMFC_LIB}/${WINSDK_ARCH}")
+endif()
+
+if (EXISTS "${DIASDK_LIB}")
+  list(APPEND LINK_FLAGS -libpath:"${DIASDK_LIB}/${DIASDK_ARCH}")
+endif()
 
 if(case_sensitive_filesystem)
   # Ensure all sub-configures use the top-level symlinks dir instead of generating their own.
