@@ -69,8 +69,9 @@ done
 
 rc_file=$1
 # Fix: llvm-rc: Error in VERSIONINFO statement (ID 1): 
-#      Non-ASCII 8-bit codepoint (169) can't occur in a non-Unicode string
-sed -i "s/\xa9/(C)/g;s/\\\\xa9/(C)/g" "$rc_file"
+#      Non-ASCII 8-bit codepoint (169) can't occur in a non-Unicode string>
+#      Non-ASCII 8-bit codepoint (251) can't occur in a non-Unicode string>
+sed -i "s/\\\\169/(C)/g;s/\xa9/(C)/g;s/\\\\xa9/(C)/g;s/\\\\251/(C)/g;s/\xfb/(C)/g;s/\\\\xfb/(C)/g" "$rc_file"
 
 llvm_rc_args+=("$rc_file")
 echo llvm-rc-${LLVM_VER} "${llvm_rc_args[@]}"
