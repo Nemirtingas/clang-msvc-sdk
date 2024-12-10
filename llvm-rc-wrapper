@@ -74,5 +74,5 @@ rc_file=$1
 sed -i "s/\\\\169/(C)/g;s/\xa9/(C)/g;s/\\\\xa9/(C)/g;s/\\\\251/(C)/g;s/\xfb/(C)/g;s/\\\\xfb/(C)/g" "$rc_file"
 
 llvm_rc_args+=("$rc_file")
-echo llvm-rc-${LLVM_VER} "${llvm_rc_args[@]}"
-llvm-rc-${LLVM_VER} "${llvm_rc_args[@]}"
+echo llvm-rc "${llvm_rc_args[@]}"
+llvm-rc "${llvm_rc_args[@]}"

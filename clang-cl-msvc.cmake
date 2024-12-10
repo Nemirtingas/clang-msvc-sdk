@@ -77,18 +77,6 @@ cmake_getconf(HOST_ARCH)
 cmake_getconf(MSVC_BASE)
 cmake_getconf(WINSDK_BASE)
 cmake_getconf(WINSDK_VER)
-cmake_getconf(LLVM_VER)
-cmake_getconf(CLANG_VER)
-
-if(LLVM_VER STREQUAL "")
-  set(LLVM_VER 11)
-  message(STATUS "LLVM_VER not set assuming version ${LLVM_VER}")
-endif()
-
-if(CLANG_VER STREQUAL "")
-  set(CLANG_VER 11)
-  message(STATUS "CLANG_VER not set assuming version ${CLANG_VER}")
-endif()
 
 if(NOT HOST_ARCH)
   set(HOST_ARCH x86_64)
@@ -146,50 +134,50 @@ if(NOT EXISTS "${WINSDK_INCLUDE}/um/WINDOWS.H")
 endif()
 
 # Attempt to find the clang-cl binary
-find_program(CLANG_CL_PATH NAMES clang-cl-${CLANG_VER})
+find_program(CLANG_CL_PATH NAMES clang-cl)
 if(${CLANG_CL_PATH} STREQUAL "CLANG_CL_PATH-NOTFOUND")
-  message(SEND_ERROR "Unable to find clang-cl-${CLANG_VER}")
+  message(SEND_ERROR "Unable to find clang-cl")
 endif()
 
 # Attempt to find the llvm-link binary
-find_program(LLD_LINK_PATH NAMES lld-link-${LLVM_VER})
+find_program(LLD_LINK_PATH NAMES lld-link)
 if(${LLD_LINK_PATH} STREQUAL "LLD_LINK_PATH-NOTFOUND")
-  message(SEND_ERROR "Unable to find lld-link-${LLVM_VER}")
+  message(SEND_ERROR "Unable to find lld-link")
 endif()
 
 # Attempt to find the lld-lib binary
-find_program(LLVM_LIB_PATH NAMES llvm-lib-${LLVM_VER})
+find_program(LLVM_LIB_PATH NAMES llvm-lib)
 if(${LLVM_LIB_PATH} STREQUAL "LLVM_LIB_PATH-NOTFOUND")
-  message(SEND_ERROR "Unable to find llvm-lib-${LLVM_VER}")
+  message(SEND_ERROR "Unable to find llvm-lib")
 endif()
 
 # Attempt to find the llvm-nm binary
-find_program(LLVM_NM_PATH NAMES llvm-nm-${LLVM_VER})
+find_program(LLVM_NM_PATH NAMES llvm-nm)
 if(${LLVM_NM_PATH} STREQUAL "LLVM_NM_PATH-NOTFOUND")
-  message(SEND_ERROR "Unable to find llvm-nm-${LLVM_VER}")
+  message(SEND_ERROR "Unable to find llvm-nm")
 endif()
 
 # Attempt to find the llvm-mt binary
-#find_program(LLVM_MT_PATH NAMES llvm-mt-${LLVM_VER})
+#find_program(LLVM_MT_PATH NAMES llvm-mt)
 set(LLVM_MT_PATH "${CMAKE_CURRENT_LIST_DIR}/llvm-mt-wrapper")
 if(${LLVM_MT_PATH} STREQUAL "LLVM_MT_PATH-NOTFOUND")
-  message(SEND_ERROR "Unable to find llvm-mt-${LLVM_VER}")
+  message(SEND_ERROR "Unable to find llvm-mt")
 endif()
 
 # Attempt to find the native clang binary
-find_program(CLANG_C_PATH NAMES clang-${CLANG_VER})
+find_program(CLANG_C_PATH NAMES clang)
 if(${CLANG_C_PATH} STREQUAL "CLANG_C_PATH-NOTFOUND")
-  message(SEND_ERROR "Unable to find clang-${CLANG_VER}")
+  message(SEND_ERROR "Unable to find clang")
 endif()
 
 # Attempt to find the native clang++ binary
-find_program(CLANG_CXX_PATH NAMES clang++-${CLANG_VER})
+find_program(CLANG_CXX_PATH NAMES clang++)
 if(${CLANG_CXX_PATH} STREQUAL "CLANG_CXX_PATH-NOTFOUND")
-  message(SEND_ERROR "Unable to find clang++-${CLANG_VER}")
+  message(SEND_ERROR "Unable to find clang++")
 endif()
 
 # Attempt to find the llvm-rc binary
-find_program(LLVM_RC_PATH NAMES llvm-rc-${LLVM_VER})
+find_program(LLVM_RC_PATH NAMES llvm-rc)
 if(${LLVM_RC_PATH} STREQUAL "LLVM_RC_PATH-NOTFOUND")
   message(SEND_ERROR "Unable to find rc")
 endif()
@@ -201,6 +189,7 @@ set(CMAKE_CXX_COMPILER "${CLANG_CL_PATH}" CACHE FILEPATH "")
 # Workaround until llvm-rc parses the .rc files like Microsoft's rc.exe
 set(CMAKE_RC_COMPILER "${CMAKE_CURRENT_LIST_DIR}/llvm-rc-wrapper" CACHE FILEPATH "")
 set(CMAKE_LINKER "${LLD_LINK_PATH}" CACHE FILEPATH "")
+set(CMAKE_LINKER_LLD "${LLD_LINK_PATH}" CACHE FILEPATH "")
 set(CMAKE_AR "${LLVM_LIB_PATH}" CACHE FILEPATH "")
 set(CMAKE_NM "${LLVM_NM_PATH}" CACHE FILEPATH "")
 set(CMAKE_MT "${LLVM_MT_PATH}" CACHE FILEPATH "")
@@ -324,8 +313,9 @@ set(CMAKE_SHARED_LINKER_FLAGS "${_CMAKE_SHARED_LINKER_FLAGS_INITIAL} ${LINK_FLAG
 # CMake populates these with a bunch of unnecessary libraries, which requires
 # extra case-correcting symlinks and what not. Instead, let projects explicitly
 # control which libraries they require.
-set(CMAKE_C_STANDARD_LIBRARIES "" CACHE STRING "" FORCE)
-set(CMAKE_CXX_STANDARD_LIBRARIES "" CACHE STRING "" FORCE)
+# NOTE: Re-enable this, CMake adds libraries lowercase, WINDOWS_PHONE OR WINDOWS_STORE add libraries with uppercase characters.
+#set(CMAKE_C_STANDARD_LIBRARIES "" CACHE STRING "" FORCE)
+#set(CMAKE_CXX_STANDARD_LIBRARIES "" CACHE STRING "" FORCE)
 
 if(NOT $ENV{VCPKG_TOOLCHAIN} STREQUAL "")
   message(STATUS "Included VCPKG: $ENV{VCPKG_TOOLCHAIN}")
