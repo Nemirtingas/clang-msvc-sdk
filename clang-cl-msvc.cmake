@@ -212,6 +212,7 @@ set(COMPILE_FLAGS
     -fms-compatibility-version=19.11
     -Wno-unused-command-line-argument # Needed to accept projects pushing both -Werror and /MP
     -imsvc "${MSVC_INCLUDE}"
+    -imsvc "${WINSDK_INCLUDE}/cppwinrt"
     -imsvc "${WINSDK_INCLUDE}/ucrt"
     -imsvc "${WINSDK_INCLUDE}/shared"
     -imsvc "${WINSDK_INCLUDE}/um"
@@ -248,6 +249,7 @@ string(REPLACE ";" " " COMPILE_FLAGS "${COMPILE_FLAGS}")
 # only be populated on the initial configure, and their values won't change
 # afterward.
 set(_CMAKE_RC_FLAGS_INITIAL -I "${MSVC_INCLUDE}"
+                            -I "${WINSDK_INCLUDE}/cppwinrt"
                             -I "${WINSDK_INCLUDE}/ucrt"
                             -I "${WINSDK_INCLUDE}/shared"
                             -I "${WINSDK_INCLUDE}/um"
