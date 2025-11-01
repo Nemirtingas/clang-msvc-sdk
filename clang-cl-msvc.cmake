@@ -208,6 +208,8 @@ set(CROSS_TOOLCHAIN_FLAGS_NATIVE "${_CTF_NATIVE_DEFAULT}" CACHE STRING "")
 set(COMPILE_FLAGS
     -Xclang -fexceptions -Xclang -fcxx-exceptions -Xclang
     -D_CRT_SECURE_NO_WARNINGS
+    /arch:SSE2
+    /arch:AVX
     --target=${TRIPLE_ARCH}-windows-msvc
     -fms-compatibility-version=19.11
     -Wno-unused-command-line-argument # Needed to accept projects pushing both -Werror and /MP
