@@ -14,14 +14,30 @@ function(init_user_prop prop)
   endif()
 endfunction()
 
-macro(cmake_getconf VAR)
-  if(NOT ${VAR})
-    set(${VAR} "$ENV{${VAR}}")
-    if(${VAR})
-      set(${VAR} "${${VAR}}" CACHE STRING "${VAR}")
+macro(cmake_get_optional VAR DEFAULT)
+  if(NOT DEFINED ${VAR})
+    if(DEFINED ENV{${VAR}})
+      set(${VAR} "$ENV{${VAR}}" CACHE STRING "${VAR}")
+      message(STATUS "Using ${VAR} from env: ${${VAR}}")
+    else()
+      set(${VAR} "${DEFAULT}" CACHE STRING "${VAR}")
+      message(STATUS "Using default ${VAR}: ${DEFAULT}")
+    endif()
+  endif()
+endmacro()
+
+macro(cmake_get_required VAR)
+  if(NOT DEFINED ${VAR})
+    if(DEFINED ENV{${VAR}})
+      set(${VAR} "$ENV{${VAR}}" CACHE STRING "${VAR}")
       message(STATUS "Found ${VAR}: ${${VAR}}")
     else()
-      message(FATAL_ERROR "Cannot determine \"${VAR}\"")
+      message(FATAL_ERROR
+        "Required variable ${VAR} is not set.\n"
+        "Please define it with:\n"
+        "  -D${VAR}=value\n"
+        "or via environment variable ${VAR}"
+      )
     endif()
   endif()
 endmacro()
@@ -72,10 +88,11 @@ endfunction()
 set(CMAKE_SYSTEM_NAME Windows)
 set(CMAKE_SYSTEM_VERSION 10.0)
 
-cmake_getconf(HOST_ARCH)
-cmake_getconf(MSVC_BASE)
-cmake_getconf(WINSDK_BASE)
-cmake_getconf(WINSDK_VER)
+cmake_get_required(HOST_ARCH)
+cmake_get_required(MSVC_BASE)
+cmake_get_required(WINSDK_BASE)
+cmake_get_required(WINSDK_VER)
+cmake_get_optional(LLVM_LTO OFF)
 
 if(NOT HOST_ARCH)
   set(HOST_ARCH x86_64)
@@ -209,8 +226,9 @@ list(APPEND _CTF_NATIVE_DEFAULT "-DCMAKE_CXX_COMPILER=${CLANG_CXX_PATH}")
 set(CROSS_TOOLCHAIN_FLAGS_NATIVE "${_CTF_NATIVE_DEFAULT}" CACHE STRING "")
 
 set(COMPILE_FLAGS
-    -Xclang -fexceptions -Xclang -fcxx-exceptions -Xclang
-    -D_CRT_SECURE_NO_WARNINGS
+    -Xclang -fexceptions
+    -Xclang -fcxx-exceptions
+    -Xclang -D_CRT_SECURE_NO_WARNINGS
     /arch:SSE2
     /arch:AVX
     --target=${TRIPLE_ARCH}-windows-msvc
@@ -222,6 +240,19 @@ set(COMPILE_FLAGS
     -imsvc "${WINSDK_INCLUDE}/shared"
     -imsvc "${WINSDK_INCLUDE}/um"
     -imsvc "${WINSDK_INCLUDE}/winrt")
+
+if(LLVM_LTO)
+  string(TOLOWER "${LLVM_LTO}" _LLVM_LTO)
+  if(_LLVM_LTO STREQUAL "on" OR _LLVM_LTO STREQUAL "1")
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE CACHE BOOL "")
+  endif()
+endif()
+
+if(${CMAKE_INTERPROCEDURAL_OPTIMIZATION})
+  message(STATUS "LTO: Enabled")
+else()
+  message(STATUS "LTO: Disabled")
+endif()
 
 if (EXISTS "${ATLMFC_INCLUDE}")
   list(APPEND COMPILE_FLAGS -imsvc "${ATLMFC_INCLUDE}")
@@ -316,6 +347,9 @@ set(CMAKE_MODULE_LINKER_FLAGS "${_CMAKE_MODULE_LINKER_FLAGS_INITIAL} ${LINK_FLAG
 
 set(_CMAKE_SHARED_LINKER_FLAGS_INITIAL "${CMAKE_SHARED_LINKER_FLAGS}" CACHE STRING "")
 set(CMAKE_SHARED_LINKER_FLAGS "${_CMAKE_SHARED_LINKER_FLAGS_INITIAL} ${LINK_FLAGS}" CACHE STRING "" FORCE)
+
+set(_CMAKE_STATIC_LINKER_FLAGS_INITIAL "${CMAKE_STATIC_LINKER_FLAGS}" CACHE STRING "")
+set(CMAKE_STATIC_LINKER_FLAGS "${_CMAKE_STATIC_LINKER_FLAGS_INITIAL} ${LINK_FLAGS}" CACHE STRING "" FORCE)
 
 # CMake populates these with a bunch of unnecessary libraries, which requires
 # extra case-correcting symlinks and what not. Instead, let projects explicitly
