@@ -232,7 +232,7 @@ set(COMPILE_FLAGS
     /arch:SSE2
     /arch:AVX
     --target=${TRIPLE_ARCH}-windows-msvc
-    -fms-compatibility-version=19.11
+    -fms-compatibility-version=19.44
     -Wno-unused-command-line-argument # Needed to accept projects pushing both -Werror and /MP
     -imsvc "${MSVC_INCLUDE}"
     -imsvc "${WINSDK_INCLUDE}/cppwinrt"
