@@ -92,33 +92,88 @@ cmake_get_required(HOST_ARCH)
 cmake_get_required(MSVC_BASE)
 cmake_get_required(WINSDK_BASE)
 cmake_get_required(WINSDK_VER)
-cmake_get_optional(LLVM_LTO OFF)
 
-if(NOT HOST_ARCH)
-  set(HOST_ARCH x86_64)
-endif()
+# https://learn.microsoft.com/en-us/cpp/build/reference/arch-minimum-cpu-architecture?view=msvc-170
+
+# x86 / x64
+set(_SIMD_X86
+  IA32
+  SSE
+  SSE2
+  AVX
+  AVX2
+  AVX512
+  AVX10.1
+  AVX10.2
+)
+
+# ARM
+set(_SIMD_ARM
+  ARMv7VE
+  VFPv4
+)
+
+set(_SIMD_ARM64
+  armv8.0
+  armv8.1
+  armv8.2
+  armv8.3
+  armv8.4
+  armv8.5
+  armv8.6
+  armv8.7
+  armv8.8
+  armv8.9
+  armv9.0
+  armv9.1
+  armv9.2
+  armv9.3
+  armv9.4
+)
+
 if(HOST_ARCH STREQUAL "aarch64" OR HOST_ARCH STREQUAL "arm64")
   set(TRIPLE_ARCH "aarch64")
   set(WINSDK_ARCH "arm64")
   set(DIASDK_ARCH "arm64")
+  set(_VALID_SIMD_ARCHS ${_SIMD_ARM})
+  set(DEFAULT_SIMD_ARCH "")
   set(CMAKE_SYSTEM_PROCESSOR ARM64)
 elseif(HOST_ARCH STREQUAL "armv7" OR HOST_ARCH STREQUAL "arm")
   set(TRIPLE_ARCH "armv7")
   set(WINSDK_ARCH "arm")
   set(DIASDK_ARCH "arm")
+  set(_VALID_SIMD_ARCHS ${_SIMD_ARM64})
+  set(DEFAULT_SIMD_ARCH "")
   set(CMAKE_SYSTEM_PROCESSOR ARM)
 elseif(HOST_ARCH STREQUAL "i686" OR HOST_ARCH STREQUAL "x86")
   set(TRIPLE_ARCH "i686")
   set(WINSDK_ARCH "x86")
   set(DIASDK_ARCH "")
+  set(_VALID_SIMD_ARCHS ${_SIMD_X86})
+  set(DEFAULT_SIMD_ARCH "AVX")
   set(CMAKE_SYSTEM_PROCESSOR X86)
 elseif(HOST_ARCH STREQUAL "x86_64" OR HOST_ARCH STREQUAL "x64")
   set(TRIPLE_ARCH "x86_64")
   set(WINSDK_ARCH "x64")
   set(DIASDK_ARCH "amd64")
+  set(_VALID_SIMD_ARCHS ${_SIMD_X86})
+  set(DEFAULT_SIMD_ARCH "AVX")
   set(CMAKE_SYSTEM_PROCESSOR AMD64)
 else()
-  message(SEND_ERROR "Unknown host architecture ${HOST_ARCH}. Must be aarch64 (or arm64), armv7 (or arm), i686 (or x86), or x86_64 (or x64).")
+  message(SEND_ERROR "Unknown host architecture ${HOST_ARCH}. Must be aarch64 (or arm64), armv7 (or arm), i686 (or x86), x86_64 (or x64).")
+endif()
+
+cmake_get_optional(LLVM_LTO OFF)
+cmake_get_optional(SIMD_ARCH "${DEFAULT_SIMD_ARCH}")
+
+if(SIMD_ARCH AND NOT "${SIMD_ARCH}" STREQUAL "")
+  list(FIND _VALID_SIMD_ARCHS "${SIMD_ARCH}" _simd_index)
+  if(_simd_index EQUAL -1)
+      message(FATAL_ERROR
+        "Invalid SIMD_ARCH='${SIMD_ARCH}' for architecture ${HOST_ARCH}.\n"
+        "Allowed values are:\n  ${_VALID_SIMD_ARCHS}"
+      )
+  endif()
 endif()
 
 set(MSVC_INCLUDE "${MSVC_BASE}/include")
@@ -133,7 +188,7 @@ set(WINSDK_LIB "${WINSDK_BASE}/Lib/${WINSDK_VER}")
 if(NOT EXISTS "${MSVC_BASE}" OR
    NOT EXISTS "${MSVC_INCLUDE}" OR
    NOT EXISTS "${MSVC_LIB}")
-  message(SEND_ERROR
+   message(SEND_ERROR
           "CMake variable MSVC_BASE must point to a folder containing MSVC "
           "system headers and libraries")
 endif()
@@ -155,50 +210,50 @@ endif()
 
 # Attempt to find the clang-cl binary
 find_program(CLANG_CL_PATH NAMES clang-cl)
-if(${CLANG_CL_PATH} STREQUAL "CLANG_CL_PATH-NOTFOUND")
+if("${CLANG_CL_PATH}" STREQUAL "CLANG_CL_PATH-NOTFOUND")
   message(SEND_ERROR "Unable to find clang-cl")
 endif()
 
 # Attempt to find the llvm-link binary
 find_program(LLD_LINK_PATH NAMES lld-link)
-if(${LLD_LINK_PATH} STREQUAL "LLD_LINK_PATH-NOTFOUND")
+if("${LLD_LINK_PATH}" STREQUAL "LLD_LINK_PATH-NOTFOUND")
   message(SEND_ERROR "Unable to find lld-link")
 endif()
 
 # Attempt to find the lld-lib binary
 find_program(LLVM_LIB_PATH NAMES llvm-lib)
-if(${LLVM_LIB_PATH} STREQUAL "LLVM_LIB_PATH-NOTFOUND")
+if("${LLVM_LIB_PATH}" STREQUAL "LLVM_LIB_PATH-NOTFOUND")
   message(SEND_ERROR "Unable to find llvm-lib")
 endif()
 
 # Attempt to find the llvm-nm binary
 find_program(LLVM_NM_PATH NAMES llvm-nm)
-if(${LLVM_NM_PATH} STREQUAL "LLVM_NM_PATH-NOTFOUND")
+if("${LLVM_NM_PATH}" STREQUAL "LLVM_NM_PATH-NOTFOUND")
   message(SEND_ERROR "Unable to find llvm-nm")
 endif()
 
 # Attempt to find the llvm-mt binary
 #find_program(LLVM_MT_PATH NAMES llvm-mt)
 set(LLVM_MT_PATH "${CMAKE_CURRENT_LIST_DIR}/llvm-mt-wrapper")
-if(${LLVM_MT_PATH} STREQUAL "LLVM_MT_PATH-NOTFOUND")
+if("${LLVM_MT_PATH}" STREQUAL "LLVM_MT_PATH-NOTFOUND")
   message(SEND_ERROR "Unable to find llvm-mt")
 endif()
 
 # Attempt to find the native clang binary
 find_program(CLANG_C_PATH NAMES clang)
-if(${CLANG_C_PATH} STREQUAL "CLANG_C_PATH-NOTFOUND")
+if("${CLANG_C_PATH}" STREQUAL "CLANG_C_PATH-NOTFOUND")
   message(SEND_ERROR "Unable to find clang")
 endif()
 
 # Attempt to find the native clang++ binary
 find_program(CLANG_CXX_PATH NAMES clang++)
-if(${CLANG_CXX_PATH} STREQUAL "CLANG_CXX_PATH-NOTFOUND")
+if("${CLANG_CXX_PATH}" STREQUAL "CLANG_CXX_PATH-NOTFOUND")
   message(SEND_ERROR "Unable to find clang++")
 endif()
 
 # Attempt to find the llvm-rc binary
 find_program(LLVM_RC_PATH NAMES llvm-rc)
-if(${LLVM_RC_PATH} STREQUAL "LLVM_RC_PATH-NOTFOUND")
+if("${LLVM_RC_PATH}" STREQUAL "LLVM_RC_PATH-NOTFOUND")
   message(SEND_ERROR "Unable to find rc")
 endif()
 
@@ -229,8 +284,6 @@ set(COMPILE_FLAGS
     -Xclang -fexceptions
     -Xclang -fcxx-exceptions
     -Xclang -D_CRT_SECURE_NO_WARNINGS
-    /arch:SSE2
-    /arch:AVX
     --target=${TRIPLE_ARCH}-windows-msvc
     -fms-compatibility-version=19.44
     -Wno-unused-command-line-argument # Needed to accept projects pushing both -Werror and /MP
@@ -252,6 +305,10 @@ if(${CMAKE_INTERPROCEDURAL_OPTIMIZATION})
   message(STATUS "LTO: Enabled")
 else()
   message(STATUS "LTO: Disabled")
+endif()
+
+if(SIMD_ARCH)
+  list(APPEND COMPILE_FLAGS "/arch:${SIMD_ARCH}")
 endif()
 
 if (EXISTS "${ATLMFC_INCLUDE}")
