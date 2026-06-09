@@ -257,6 +257,12 @@ if("${LLVM_RC_PATH}" STREQUAL "LLVM_RC_PATH-NOTFOUND")
   message(SEND_ERROR "Unable to find rc")
 endif()
 
+# Attempt to find the llvm-ml binary
+find_program(LLVM_ML_PATH NAMES llvm-ml)
+if("${LLVM_ML_PATH}" STREQUAL "LLVM_ML_PATH-NOTFOUND")
+  message(SEND_ERROR "Unable to find ml")
+endif()
+
 
 set(CMAKE_C_COMPILER "${CLANG_CL_PATH}" CACHE FILEPATH "")
 set(CMAKE_CXX_COMPILER "${CLANG_CL_PATH}" CACHE FILEPATH "")
@@ -268,6 +274,7 @@ set(CMAKE_LINKER_LLD "${LLD_LINK_PATH}" CACHE FILEPATH "")
 set(CMAKE_AR "${LLVM_LIB_PATH}" CACHE FILEPATH "")
 set(CMAKE_NM "${LLVM_NM_PATH}" CACHE FILEPATH "")
 set(CMAKE_MT "${LLVM_MT_PATH}" CACHE FILEPATH "")
+set(CMAKE_ASM_MASM_COMPILER "${LLVM_ML_PATH}" CACHE FILEPATH "")
 
 # Even though we're cross-compiling, we need some native tools (e.g. llvm-tblgen), and those
 # native tools have to be built before we can start doing the cross-build.  LLVM supports
