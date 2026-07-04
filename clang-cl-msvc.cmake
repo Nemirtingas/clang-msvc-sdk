@@ -330,8 +330,24 @@ if(case_sensitive_filesystem)
   # Ensure all sub-configures use the top-level VFS overlay instead of generating their own.
   init_user_prop(winsdk_vfs_overlay_path)
   if(NOT winsdk_vfs_overlay_path)
-    set(winsdk_vfs_overlay_path "${CMAKE_BINARY_DIR}/winsdk_vfs_overlay.yaml")
-    generate_winsdk_vfs_overlay("${WINSDK_BASE}/Include/${WINSDK_VER}" "${winsdk_vfs_overlay_path}")
+    set(_winsdk_vfs_cache_dir "${CMAKE_CURRENT_LIST_DIR}/.cmake-cache")
+    file(MAKE_DIRECTORY "${_winsdk_vfs_cache_dir}")
+
+    string(CONCAT _winsdk_vfs_cache_key
+      "${WINSDK_BASE}" ";"
+      "${WINSDK_VER}" ";"
+      "${WINSDK_ARCH}" ";"
+      "${case_sensitive_filesystem}")
+    string(SHA256 "${_winsdk_vfs_cache_key}" _winsdk_vfs_cache_hash)
+    set(winsdk_vfs_overlay_path "${_winsdk_vfs_cache_dir}/winsdk_vfs_overlay_${_winsdk_vfs_cache_hash}.yaml")
+
+    if(NOT EXISTS "${winsdk_vfs_overlay_path}")
+      message(STATUS "Generating cached WinSDK VFS overlay: ${winsdk_vfs_overlay_path}")
+      generate_winsdk_vfs_overlay("${WINSDK_BASE}/Include/${WINSDK_VER}" "${winsdk_vfs_overlay_path}")
+    else()
+      message(STATUS "Reusing cached WinSDK VFS overlay: ${winsdk_vfs_overlay_path}")
+    endif()
+
     init_user_prop(winsdk_vfs_overlay_path)
   endif()
   list(APPEND COMPILE_FLAGS
